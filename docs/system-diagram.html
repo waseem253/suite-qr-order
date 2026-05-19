@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Suite QR Order — System Overview</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root { --ink:#211d18; --muted:#7a7268; --line:#e6dfd2; --accent:#1f6f6b; --bg:#fffdf9; }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif;
+         color:var(--ink); background:#f3eee4; margin:0; padding:32px; }
+  .page { max-width:1180px; margin:0 auto; background:var(--bg);
+           border:1px solid var(--line); border-radius:14px; padding:40px 48px 48px;
+           box-shadow:0 6px 28px rgba(0,0,0,.07); }
+  h1 { font-size:24px; margin:0 0 4px; letter-spacing:-.02em; }
+  .sub { color:var(--muted); font-size:14px; margin:0 0 28px; }
+  h2 { font-size:15px; text-transform:uppercase; letter-spacing:.08em;
+       color:var(--accent); margin:34px 0 10px; }
+  .diagram { border:1px solid var(--line); border-radius:10px; padding:18px;
+             background:#faf6ee; overflow-x:auto; }
+  .legend { display:flex; flex-wrap:wrap; gap:14px 26px; margin-top:18px;
+            font-size:12.5px; color:var(--muted); }
+  .legend b { color:var(--ink); }
+  .foot { margin-top:34px; padding-top:18px; border-top:1px solid var(--line);
+          font-size:12.5px; color:var(--muted); display:flex; justify-content:space-between; }
+  .pill { display:inline-block; background:#e3efee; color:#1f6f6b; font-weight:600;
+          font-size:11px; padding:3px 9px; border-radius:999px; vertical-align:middle; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Suite QR Order &mdash; In-Room Ordering <span class="pill">SYSTEM OVERVIEW</span></h1>
+  <p class="sub">86-room Maltese hotel &middot; scan &rarr; order &rarr; pay &rarr; routed to the right team, fully backend</p>
+
+  <h2>1 &mdash; From QR scan to the right team</h2>
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+  QR([Room QR<br/>/room/204]) --> WEB{{Next.js app on Vercel}}
+  WEB --> CAT[3 category pages<br/>F&amp;B · Adventure · Taxi]
+  CAT --> PAY[[Stripe Checkout<br/>EUR · PCI off-server]]
+  PAY --> CONF[Payment confirmed<br/>webhook + verify]
+  CONF --> EMAIL[(Owner email<br/>every order)]
+  CONF --> RT{Route by category}
+  RT -->|F&amp;B| W1[WhatsApp number 1]
+  RT -->|Adventure| W2[WhatsApp number 2]
+  RT -->|Taxi| W3[WhatsApp number 3]
+  CONF --> OK[On-screen confirmation<br/>+ 30s double-tap block]
+  classDef sys fill:#e3efee,stroke:#1f6f6b,color:#12433f;
+  classDef ext fill:#fdf0e0,stroke:#b08948,color:#7a5a18;
+  classDef store fill:#eef4ff,stroke:#3b6fd4,color:#1f3d80;
+  class WEB,OK sys;
+  class PAY,W1,W2,W3 ext;
+  class EMAIL store;
+    </pre>
+  </div>
+
+  <h2>2 &mdash; Service rules the app enforces</h2>
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart TB
+  IN[Guest opens category] --> H{Category?}
+  H -->|F&amp;B| HR{Malta time<br/>10:00&ndash;04:00?}
+  H -->|Adventure / Taxi| OPEN[Orderable 24/7]
+  HR -->|yes| OPEN
+  HR -->|no| BROWSE[Menu fully browseable<br/>polite closed message<br/>ordering disabled]
+  OPEN --> CD{Room in 30s<br/>cooldown?}
+  CD -->|yes| WAIT[Blocked server-side<br/>until window clears]
+  CD -->|no| PAYOK[Proceed to Stripe]
+  classDef sys fill:#e3efee,stroke:#1f6f6b,color:#12433f;
+  class OPEN,PAYOK sys;
+    </pre>
+  </div>
+
+  <div class="legend">
+    <span><b>Provider-abstracted</b> &mdash; Stripe, WhatsApp (Meta/Twilio) and the order store sit behind interfaces; creds are config</span>
+    <span><b>Webhook-authoritative</b> &mdash; the owner is notified even if the guest closes the tab before redirect</span>
+    <span><b>i18n-ready</b> &mdash; English at launch, Italian + French are a content drop, not a refactor</span>
+  </div>
+
+  <div class="foot">
+    <span>Live demo &amp; code: github.com/waseem253/suite-qr-order</span>
+    <span>Waseem Iftikhar &mdash; Full-stack / AI Engineer</span>
+  </div>
+</div>
+<script>mermaid.initialize({ startOnLoad:true, theme:"base",
+  themeVariables:{ fontFamily:"Inter, -apple-system, Arial, sans-serif", fontSize:"14px",
+  primaryColor:"#ffffff", primaryBorderColor:"#cbb89a", lineColor:"#9a8f7d", primaryTextColor:"#211d18" }});</script>
+</body>
+</html>
