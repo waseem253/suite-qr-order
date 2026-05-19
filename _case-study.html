@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+ @page{size:Letter;margin:0}*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+ html,body{font-family:'Inter',system-ui,sans-serif;color:#0a0a0a;background:#fff;-webkit-font-smoothing:antialiased;font-size:10.5pt;line-height:1.5;letter-spacing:-.005em}
+ body{width:8.5in;min-height:11in;padding:.55in .6in}
+ .hero{display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:2px solid #0a0a0a;margin-bottom:20px}
+ .logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#1f6f6b,#155350);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0}
+ .ht{flex:1}.ht h1{font-size:21pt;font-weight:800;letter-spacing:-.03em;line-height:1.05}
+ .ht .s{font-size:10.5pt;color:#525252;font-weight:500;margin-top:3px}
+ .hm{text-align:right;font-size:8.5pt;color:#155350;font-family:'JetBrains Mono',monospace;font-weight:600}
+ h2{font-size:13pt;font-weight:700;letter-spacing:-.02em;margin:16px 0 7px}h2:first-of-type{margin-top:6px}
+ p{margin-bottom:8px;color:#404040}p strong{color:#0a0a0a;font-weight:600}
+ .arch{background:#fafafa;border:1px solid #e7e5e4;border-radius:8px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:8.5pt;line-height:1.55;color:#404040;white-space:pre;margin:6px 0 12px}
+ .arch .v{color:#155350;font-weight:600}
+ .pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+ .pill{padding:3px 8px;border-radius:6px;background:#e3efee;border:1px solid #bcdbd9;color:#155350;font-family:'JetBrains Mono',monospace;font-size:8.5pt;font-weight:500}
+ .callout{background:#e3efee;border-left:3px solid #1f6f6b;padding:8px 12px;border-radius:0 6px 6px 0;margin:8px 0 12px;font-size:9.5pt;color:#0d3b39}
+ footer{margin-top:18px;padding-top:12px;border-top:1px solid #e7e5e4;display:flex;justify-content:space-between;font-size:9pt;color:#737373}
+ footer .n{color:#0a0a0a;font-weight:600}
+</style></head><body>
+ <div class="hero"><span class="logo">SQ</span><div class="ht"><h1>Suite QR Order — Guest-Facing Hotel Ordering</h1><div class="s">Scan the room QR → order → pay → routed to the right team, fully backend</div></div><div class="hm">suite-qr-order.vercel.app</div></div>
+
+ <h2>The problem</h2>
+ <p>An 86-room Maltese hotel wanted guests to scan a QR in their room and order Food & Beverage, Adventure experiences or a Taxi — paid online, premium feel, with each order reaching the right team automatically and the guest never seeing the backend.</p>
+
+ <h2>The build</h2>
+ <p>A Next.js app: the room number is in the URL (<code>/room/204</code>, guest never types it); three content-driven category pages; F&B orderable 10:00–04:00 Malta time (the window crosses midnight) while the menu stays browseable outside hours; Adventure & Taxi 24/7; real Stripe-hosted Checkout (card data never touches the server); on-screen confirmation; a server-enforced 30-second double-tap block per room; English at launch with Italian + French scaffolded.</p>
+
+ <h2>Architecture</h2>
+ <div class="arch">Room QR ─▶ Next.js ─▶ category pages ─▶ <span class="v">Stripe Checkout</span>
+   └─▶ webhook-authoritative confirmation
+         ├─▶ owner email
+         ├─▶ <span class="v">WhatsApp</span> routed by category (F&B / Adventure / Taxi)
+         └─▶ on-screen confirmation + 30s double-tap block</div>
+ <p>Stripe, WhatsApp (Meta/Twilio) and the order store sit behind interfaces. With Stripe test keys it is a real card-entry page; without, a clearly-labeled simulated payment runs the identical flow so the demo never breaks. The Stripe webhook is the production-authoritative path — the owner is notified even if the guest closes the tab.</p>
+
+ <div class="callout"><strong>Why it matters:</strong> real payments with real edges — midnight-crossing service hours, PCI kept off-server, idempotent notify, server-enforced anti-double-tap, and i18n that's a content drop, not a refactor.</div>
+
+ <h2>Stack</h2>
+ <div class="pills"><span class="pill">Next.js 16</span><span class="pill">TypeScript</span><span class="pill">Stripe Checkout</span><span class="pill">WhatsApp Business API</span><span class="pill">Vercel</span></div>
+
+ <footer><div><span class="n">Waseem Iftikhar</span> · AI / Full-stack Engineer</div><div>Portfolio case study</div></footer>
+</body></html>
